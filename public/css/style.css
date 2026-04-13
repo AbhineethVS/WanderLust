@@ -87,3 +87,16 @@ body {
 	background-color: red;
 	border: 2px solid red;
 }
+
+.show-img {
+	height: 30vh;
+}
+
+.btns {
+	display: flex;
+}
+
+.show-card {
+	padding-right: 0;
+	padding-left: 0;
+}
