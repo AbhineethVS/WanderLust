@@ -4,7 +4,12 @@
 		<body>
 			<br /><br /><br />
 			<h3>Create New Listing</h3>
-			<form action="/listings" method="post">
+			<form
+				action="/listings"
+				method="post"
+				novalidate
+				class="needs-validation"
+			>
 				<div>
 					<label for="title" class="form-label">Title</label>
 					<input
@@ -12,7 +17,12 @@
 						name="listing[title]"
 						class="form-control"
 						placeholder="Enter Title"
+						required
 					/>
+					<div class="valid-feedback">Title looks good!</div>
+					<div class="invalid-feedback">
+						Please enter a valid title
+					</div>
 				</div>
 
 				<br /><br />
@@ -25,7 +35,12 @@
 						type="text"
 						name="listing[description]"
 						placeholder="Enter Description"
+						required
 					></textarea>
+					<div class="valid-feedback">Description looks good!</div>
+					<div class="invalid-feedback">
+						Please enter a short description
+					</div>
 				</div>
 
 				<br /><br />
@@ -45,10 +60,15 @@
 						<label for="price" class="form-label">Price</label>
 						<input
 							class="form-control"
-							type="text"
+							type="number"
 							name="listing[price]"
 							placeholder="1200"
+							required
 						/>
+						<div class="valid-feedback">Price looks good!</div>
+						<div class="invalid-feedback">
+							Please enter a valid price
+						</div>
 					</div>
 
 					<br /><br />
@@ -59,7 +79,14 @@
 							name="listing[country]"
 							placeholder="India"
 							class="form-control"
+							required
 						/>
+						<div class="valid-feedback">
+							Country name looks good!
+						</div>
+						<div class="invalid-feedback">
+							Please enter a valid country name
+						</div>
 					</div>
 				</div>
 
@@ -71,7 +98,12 @@
 						name="listing[location]"
 						placeholder="Banglore, Karnataka"
 						class="form-control"
+						required
 					/>
+					<div class="valid-feedback">Location looks good!</div>
+					<div class="invalid-feedback">
+						Please enter a valid location
+					</div>
 				</div>
 
 				<br /><br />
