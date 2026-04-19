@@ -86,10 +86,6 @@ app.get("/listings/:id", async (req, res) => {
 	res.render("listings/show.ejs", { listing });
 });
 
-// app.use((err, req, res, next) => {
-// 	res.send("Something went wrong!");
-// });
-
 app.listen(port, () => {
 	console.log(`listening through port ${port}`);
 });
