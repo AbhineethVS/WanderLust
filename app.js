@@ -8,6 +8,9 @@ const path = require("path");
 const req = require("express/lib/request");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
+const wrapAsync = require("./utils/wrapAsync");
+const ExpressError = require("./utils/ExpressError");
+const { listingSchema } = require("./schema");
 
 main()
 	.then(() => {
@@ -32,58 +35,99 @@ app.get("/", (req, res) => {
 	res.send("root is working!");
 });
 
-// INDEX route
-app.get("/listings", async (req, res) => {
-	const allListings = await Listing.find({});
-	res.render("listings/index.ejs", { allListings });
-});
+const validateListing = (req, res, next) => {
+	let { error } = listingSchema.validate(req.body);
+	if (error) {
+		let errMsg = error.details.map((el) => el.message).join(",");
+		throw new ExpressError(400, errMsg);
+	} else {
+		next();
+	}
+};
 
+// INDEX route
+app.get(
+	"/listings",
+	wrapAsync(async (req, res) => {
+		const allListings = await Listing.find({});
+		res.render("listings/index.ejs", { allListings });
+	}),
+);
+
+//Create Route
 app.get("/listings/new", (req, res) => {
 	res.render("listings/new.ejs");
 });
-app.post("/listings", async (req, res) => {
-	let { listing } = req.body;
+app.post(
+	"/listings",
+	validateListing,
+	wrapAsync(async (req, res, next) => {
+		let { listing } = req.body;
 
-	// Convert the image string from the form into the required object format
-	listing.image = {
-		filename: "listingimage", // Default filename
-		url: listing.image, // The URL string from your form input
-	};
+		listing.image = {
+			filename: "listingimage",
+			url: listing.image,
+		};
+		const newListing = new Listing(listing);
+		await newListing.save();
+		res.redirect("/listings");
+	}),
+);
 
-	const newListing = new Listing(listing);
-	await newListing.save();
+//EDIT route
+app.get(
+	"/listings/:id/edit",
+	wrapAsync(async (req, res) => {
+		let { id } = req.params;
+		const listing = await Listing.findById(id);
+		res.render("listings/edit.ejs", { listing });
+	}),
+);
 
-	res.redirect("/listings");
-});
-
-app.get("/listings/:id/edit", async (req, res) => {
-	let { id } = req.params;
-	const listing = await Listing.findById(id);
-	res.render("listings/edit.ejs", { listing });
-});
-app.put("/listings/:id", async (req, res) => {
-	let { id } = req.params;
-	let { listing } = req.body;
-	listing.image = {
-		filename: "listingImage",
-		url: listing.image,
-	};
-	await Listing.findByIdAndUpdate(id, listing);
-	res.redirect(`/listings/${id}`);
-});
+//Update Route
+app.put(
+	"/listings/:id",
+	validateListing,
+	wrapAsync(async (req, res) => {
+		let { id } = req.params;
+		let { listing } = req.body;
+		listing.image = {
+			filename: "listingImage",
+			url: listing.image,
+		};
+		await Listing.findByIdAndUpdate(id, listing);
+		res.redirect(`/listings/${id}`);
+	}),
+);
 
 // DELETE route
-app.delete("/listings/:id", async (req, res) => {
-	let { id } = req.params;
-	await Listing.findByIdAndDelete(id);
-	res.redirect("/listings");
-});
+app.delete(
+	"/listings/:id",
+	wrapAsync(async (req, res) => {
+		let { id } = req.params;
+		await Listing.findByIdAndDelete(id);
+		res.redirect("/listings");
+	}),
+);
 
 //SHOW Route
-app.get("/listings/:id", async (req, res) => {
-	let { id } = req.params;
-	const listing = await Listing.findById(id);
-	res.render("listings/show.ejs", { listing });
+app.get(
+	"/listings/:id",
+	wrapAsync(async (req, res) => {
+		let { id } = req.params;
+		const listing = await Listing.findById(id);
+		res.render("listings/show.ejs", { listing });
+	}),
+);
+
+app.use((req, res, next) => {
+	next(new ExpressError(404, "Page not found!"));
+});
+
+app.use((err, req, res, next) => {
+	let { statusCode = 500, message = "Something went wrong!" } = err;
+	res.status(statusCode).render("error.ejs", { message });
+	//res.status(statusCode).send(message);
 });
 
 app.listen(port, () => {
